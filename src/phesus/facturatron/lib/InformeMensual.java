@@ -1,4 +1,3 @@
-
 package phesus.facturatron.lib;
 
 import java.io.BufferedWriter;
@@ -15,13 +14,17 @@ import mx.bigdata.sat.cfd.v22.schema.Comprobante.Emisor;
 import phesus.facturatron.lib.entities.ComprobanteTron;
 
 /**
- * Clase encargada de la generación del reporte mensual de acuerdo al anexo 20. IMPORTANTE: 1) No implementa los campos:
- *  pedimento, fecha de pedimento ni aduana
- *  2) No es reponsabilidad de ésta clase obtener los comprobantes desde dónde estén almacenados, asímismo no es su reponsabilidad
- *  asegurar que los comprobantes otorgados sean del mes correspondiente, eso debe comprobarse antes de pasarlerselos
+ * Clase encargada de la generación del reporte mensual de acuerdo al anexo 20.
+ * IMPORTANTE: 1) No implementa los campos: pedimento, fecha de pedimento ni
+ * aduana 2) No es reponsabilidad de ésta clase obtener los comprobantes desde
+ * dónde estén almacenados, asímismo no es su reponsabilidad asegurar que los
+ * comprobantes otorgados sean del mes correspondiente, eso debe comprobarse
+ * antes de pasarlerselos
+ *
  * @author Octavio Ruiz @ Phesus
  */
 public class InformeMensual {
+
     private ArrayList<EnumMap<Campos, String>> dataMap;
     private Emisor emisor;
     private Calendar periodo;
@@ -30,15 +33,21 @@ public class InformeMensual {
     /**
      * Define en ordenadamente (secuencialmente) los campos del reporte
      */
-    public enum Campos { RFC, SERIE, FOLIO, NO_APROBACION, FECHA, TOTAL, IMPUESTOS, EDO_DEL_COMPROBANTE, TIPO_COMPROBANTE, PEDIMIENTO,
-                        FECHA_PEDIMIENTO, ADUANA; }
+    public enum Campos {
+
+        RFC, SERIE, FOLIO, NO_APROBACION, FECHA, TOTAL, IMPUESTOS, EDO_DEL_COMPROBANTE, TIPO_COMPROBANTE, PEDIMIENTO,
+        FECHA_PEDIMIENTO, ADUANA;
+    }
 
     /**
-     * CFD = Comprobantes Fiscales Digitales
-     * COMPROBANTESSOLICITADOS = (Comprobante semi-tradicional) Comprobantes solicitados por medio de un establecimiento autorizado
+     * CFD = Comprobantes Fiscales Digitales COMPROBANTESSOLICITADOS =
+     * (Comprobante semi-tradicional) Comprobantes solicitados por medio de un
+     * establecimiento autorizado
      */
-    public enum Esquema { CFD, COMPROBANTESSOLICITADOS; }
+    public enum Esquema {
 
+        CFD, COMPROBANTESSOLICITADOS;
+    }
 
     /**
      * @return the dataMap
@@ -79,11 +88,13 @@ public class InformeMensual {
         String nombre;
 
         File file = new File(dir);
-        if(!file.exists()) { throw new Exception("La carpeta destino no exíste"); }
-        nombre  = dir;
-        nombre += String.valueOf(esquema.ordinal()+1);
+        if (!file.exists()) {
+            throw new Exception("La carpeta destino no exíste");
+        }
+        nombre = dir;
+        nombre += String.valueOf(esquema.ordinal() + 1);
         nombre += emisor.getRfc();
-        nombre += String.valueOf(periodo.get(Calendar.MONTH)+1);
+        nombre += String.valueOf(periodo.get(Calendar.MONTH) + 1);
         nombre += String.valueOf(periodo.get(Calendar.YEAR));
         nombre += ".txt";
 
@@ -106,6 +117,7 @@ public class InformeMensual {
 
     /**
      * Constructor del reporte mensual
+     *
      * @param esquema Ver documentación del tipo Esquema
      * @param emisor
      * @param periodo Sólo se tomarán en cuenta el año y mes del objeto Date
@@ -126,14 +138,14 @@ public class InformeMensual {
     private void addConcepto(ComprobanteTron comp) throws Exception {
         EnumMap<Campos, String> renglon = new EnumMap<Campos, String>(Campos.class);
 
-        String edoComprobante = String.format("%s", comp.isEstadoComprobante()?"1":"0");
+        String edoComprobante = String.format("%s", comp.isEstadoComprobante() ? "1" : "0");
         String tipoComprobante = "";
-        
-        if(comp.getTipoDeComprobante().toUpperCase().equals("INGRESO")) {
+
+        if (comp.getTipoDeComprobante().toUpperCase().equals("INGRESO")) {
             tipoComprobante = "I";
-        } else if(comp.getTipoDeComprobante().toUpperCase().equals("EGRESO")) {
+        } else if (comp.getTipoDeComprobante().toUpperCase().equals("EGRESO")) {
             tipoComprobante = "E";
-        } else if(comp.getTipoDeComprobante().toUpperCase().equals("TRASLADO")) {
+        } else if (comp.getTipoDeComprobante().toUpperCase().equals("TRASLADO")) {
             tipoComprobante = "T";
         } else {
             throw new Exception("Tipo de comprobante desconocido");
@@ -142,22 +154,24 @@ public class InformeMensual {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String fechaHora = formatter.format(comp.getFecha());
 
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(comp.getFecha());
         //Utilizo String.format en lugar de conversión o casting porqué en éste tipo de reportes suele necesitarse
         //  modificar el formato de algunos campos o llenarlos de ceros, etc.
-        renglon.put(Campos.RFC                , comp.getReceptor().getRfc());
-        renglon.put(Campos.SERIE              , comp.getSerie());
-        renglon.put(Campos.FOLIO              , comp.getFolio());
-        renglon.put(Campos.NO_APROBACION      , String.format("%s", comp.getNoAprobacion()));
-        renglon.put(Campos.FECHA              , fechaHora);
-        renglon.put(Campos.TOTAL              , String.format("%.2f", comp.getTotal()));
-        renglon.put(Campos.IMPUESTOS          , String.format("%.2f", comp.getImpuestos().getTotalImpuestosTrasladados()));
+        renglon.put(Campos.RFC, comp.getReceptor().getRfc());
+        renglon.put(Campos.SERIE, comp.getSerie().toUpperCase());
+        renglon.put(Campos.FOLIO, comp.getFolio());
+        renglon.put(Campos.NO_APROBACION, calendar.get(Calendar.YEAR) + String.format("%s", comp.getNoAprobacion()));
+        renglon.put(Campos.FECHA, fechaHora);
+        renglon.put(Campos.TOTAL, String.format("%.2f", comp.getTotal()));
+        renglon.put(Campos.IMPUESTOS, String.format("%.2f", comp.getImpuestos().getTotalImpuestosTrasladados()));
         renglon.put(Campos.EDO_DEL_COMPROBANTE, edoComprobante);
-        renglon.put(Campos.TIPO_COMPROBANTE   , tipoComprobante);
-        renglon.put(Campos.PEDIMIENTO         , "");
-        renglon.put(Campos.FECHA_PEDIMIENTO   , "");
-        renglon.put(Campos.ADUANA             , "");
+        renglon.put(Campos.TIPO_COMPROBANTE, tipoComprobante);
+        renglon.put(Campos.PEDIMIENTO, "");
+        renglon.put(Campos.FECHA_PEDIMIENTO, "");
+        renglon.put(Campos.ADUANA, "");
 
-        if(!comp.isEstadoComprobante()) {
+        if (!comp.isEstadoComprobante()) {
             comp.setEstadoComprobante(true);
             addConcepto(comp);
         }
@@ -165,16 +179,21 @@ public class InformeMensual {
     }
 
     /**
-     * Método fundamental que entrega en el sistema de archivos en formato TXT el reporte con su debido nombre.
-     * Notar que rutaTXT debe ser la ruta al DIRECTORIO (CARPETA) y no el nombre del archivo destino, éste nombre lo generará el método
-     * de acuerdo a lo requerido en el anexo 20.
-     * @param rutaTXT debe ser la ruta al DIRECTORIO (CARPETA) y no el nombre del archivo destino, éste nombre lo generará el método
-     * de acuerdo a lo requerido en el anexo 20.
+     * Método fundamental que entrega en el sistema de archivos en formato TXT
+     * el reporte con su debido nombre. Notar que rutaTXT debe ser la ruta al
+     * DIRECTORIO (CARPETA) y no el nombre del archivo destino, éste nombre lo
+     * generará el método de acuerdo a lo requerido en el anexo 20.
+     *
+     * @param rutaTXT debe ser la ruta al DIRECTORIO (CARPETA) y no el nombre
+     * del archivo destino, éste nombre lo generará el método de acuerdo a lo
+     * requerido en el anexo 20.
      * @throws IOException
      * @throws Exception
      */
     public void toTXTFile(String rutaTXT) throws IOException, Exception {
-        if(getDataMap().isEmpty()) { throw new Exception("No se han proporcionado comprobantes. Si no los hay en éste periódo probablemente debería presentar otro tipo de reporte"); }
+        if (getDataMap().isEmpty()) {
+            throw new Exception("No se han proporcionado comprobantes. Si no los hay en éste periódo probablemente debería presentar otro tipo de reporte");
+        }
 
         String file = getTXTFileDestination(rutaTXT);
         FileWriter fstream = new FileWriter(file, false);
@@ -189,14 +208,18 @@ public class InformeMensual {
         }
         out.close();
     }
+
     /**
      * Función estática pública para el manejo
+     *
      * @param s
      * @param delimiter
      * @return
      */
     public static String join(AbstractCollection<String> s, String delimiter) {
-        if (s.isEmpty()) return "";
+        if (s.isEmpty()) {
+            return "";
+        }
         Iterator<String> iter = s.iterator();
         StringBuffer buffer = new StringBuffer(iter.next());
         while (iter.hasNext()) {
