@@ -187,10 +187,11 @@ public class InformeMensual {
      * @param rutaTXT debe ser la ruta al DIRECTORIO (CARPETA) y no el nombre
      * del archivo destino, éste nombre lo generará el método de acuerdo a lo
      * requerido en el anexo 20.
+     * @return El nombre del archivo creado.
      * @throws IOException
      * @throws Exception
      */
-    public void toTXTFile(String rutaTXT) throws IOException, Exception {
+    public String toTXTFile(String rutaTXT) throws IOException, Exception {
         if (getDataMap().isEmpty()) {
             throw new Exception("No se han proporcionado comprobantes. Si no los hay en éste periódo probablemente debería presentar otro tipo de reporte");
         }
@@ -207,6 +208,7 @@ public class InformeMensual {
             out.write('\n');
         }
         out.close();
+        return file;
     }
 
     /**
