@@ -158,8 +158,11 @@ public class InformeMensual {
         calendar.setTime(comp.getFecha());
         //Utilizo String.format en lugar de conversión o casting porqué en éste tipo de reportes suele necesitarse
         //  modificar el formato de algunos campos o llenarlos de ceros, etc.
+        String serie = comp.getSerie();
+        if(serie != null) serie = serie.toUpperCase();
+        if(serie == null) serie = "";
         renglon.put(Campos.RFC, comp.getReceptor().getRfc());
-        renglon.put(Campos.SERIE, comp.getSerie().toUpperCase());
+        renglon.put(Campos.SERIE, serie);
         renglon.put(Campos.FOLIO, comp.getFolio());
         renglon.put(Campos.NO_APROBACION, calendar.get(Calendar.YEAR) + String.format("%s", comp.getNoAprobacion()));
         renglon.put(Campos.FECHA, fechaHora);
